@@ -1,0 +1,609 @@
+Here is the updated HTML code.
+
+**Changes made:**
+
+1. **Content Revision:** I have replaced the questions referencing sexual transmission with new questions about **Vectorborne** and **Vehicleborne** transmission to maintain the 50-question set.
+2. **Pagination:** The test now displays **one question at a time**.
+3. **Navigation:** A "Next Question" button appears only *after* you answer the current question, ensuring you review the explanation before moving on.
+
+You can save this as an `.html` file and open it in your browser.
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disease Detectives (Div B): Single Question Mode</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-top: 80px; /* Space for fixed header */
+            background-color: #f4f7f6;
+        }
+
+        /* Fixed Scoreboard & Progress */
+        #top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #2c3e50;
+            color: #fff;
+            padding: 15px 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .bar-content {
+            max-width: 800px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+
+        #scoreboard, #progress {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .question-card {
+            background-color: #fff;
+            padding: 30px;
+            margin-bottom: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            min-height: 300px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .question-text {
+            font-weight: 700;
+            font-size: 1.3em;
+            margin-bottom: 25px;
+            color: #2c3e50;
+        }
+
+        .options {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .option-item {
+            margin-bottom: 12px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            font-size: 1.1em;
+        }
+
+        .option-item:hover {
+            background-color: #f9f9f9;
+            border-color: #bdc3c7;
+        }
+
+        .option-item.disabled {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .option-item.correct-selection {
+            background-color: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+
+        .option-item.incorrect-selection {
+            background-color: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+
+        /* Explanation Box */
+        .explanation {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-left: 5px solid #6c757d;
+            border-radius: 4px;
+            font-size: 1.05em;
+        }
+
+        .explanation.correct { border-left-color: #28a745; background-color: #e9f7ef; }
+        .explanation.incorrect { border-left-color: #dc3545; background-color: #fdeded; }
+
+        /* Navigation Buttons */
+        .nav-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .next-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.1em;
+            border-radius: 6px;
+            cursor: pointer;
+            display: none; /* Hidden until answer is selected */
+            transition: background 0.2s;
+        }
+
+        .next-btn:hover {
+            background-color: #2980b9;
+        }
+
+        .finish-screen {
+            text-align: center;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="top-bar">
+        <div class="bar-content">
+            <div id="progress">Question 1 / 50</div>
+            <div id="scoreboard">Score: 0</div>
+        </div>
+    </div>
+
+    <div id="quiz-container"></div>
+
+    <div class="nav-container">
+        <button id="next-btn" class="next-btn" onclick="nextQuestion()">Next Question &rarr;</button>
+    </div>
+
+    <div id="finish-screen" class="finish-screen">
+        <h1>Test Complete!</h1>
+        <h2 id="final-score"></h2>
+        <p>Refresh the page to try again.</p>
+    </div>
+
+<script>
+    // 50 Questions (Revised to remove sexual transmission questions)
+    const quizData = [
+        {
+            q: "1. In the Epidemiologic Triad, which component represents the 'who' that harbors the disease?",
+            a: [ "Agent", "Host", "Environment", "Vector" ],
+            correct: 1,
+            explanation: "The <strong>Host</strong> is the organism (human or animal) that harbors the disease."
+        },
+        {
+            q: "2. A mosquito carries the malaria parasite from person to person. The mosquito is an example of a(n):",
+            a: [ "Fomite", "Vehicle", "Vector", "Agent" ],
+            correct: 2,
+            explanation: "Insects like mosquitoes that carry an agent to a host are called <strong>Vectors</strong>."
+        },
+        {
+            // REPLACED QUESTION
+            q: "3. Which of the following is an example of Indirect Vehicleborne transmission?",
+            a: [ "Holding hands", "Drinking contaminated water", "Droplet spread (sneezing)", "Bite from a rabid dog" ],
+            correct: 1,
+            explanation: "<strong>Drinking contaminated water</strong> is vehicleborne transmission. The water is the inanimate vehicle carrying the pathogen."
+        },
+        {
+            q: "4. A person eats potato salad contaminated with Salmonella. The potato salad is acting as a:",
+            a: [ "Vector", "Vehicle", "Reservoir", "Host" ],
+            correct: 1,
+            explanation: "Food, water, and biologic products that carry an agent are called <strong>Vehicles</strong>."
+        },
+        {
+            q: "5. What is the key distinction between 'droplet spread' and 'airborne transmission'?",
+            a: [ "Droplets are indirect; airborne is direct", "Droplets travel short distances; airborne particles remain suspended", "Droplets contain bacteria; airborne contains viruses", "There is no difference" ],
+            correct: 1,
+            explanation: "<strong>Droplet spread</strong> refers to spray that travels a few feet. <strong>Airborne</strong> refers to residue that stays suspended for long periods."
+        },
+        {
+            q: "6. The habitat in which an infectious agent normally lives, grows, and multiplies is called the:",
+            a: [ "Source", "Vector", "Reservoir", "Carrier" ],
+            correct: 2,
+            explanation: "This is the definition of a <strong>Reservoir</strong>. It can be human, animal, or environmental."
+        },
+        {
+            q: "7. An individual has been infected, is capable of transmitting the pathogen, but shows no clinical symptoms. This person is a:",
+            a: [ "Case", "Carrier", "Sentinel", "Vector" ],
+            correct: 1,
+            explanation: "A <strong>Carrier</strong> is someone with an inapparent infection who can transmit the pathogen."
+        },
+        {
+            q: "8. Which of the following is considered an 'Environmental' factor in the Epidemiologic Triad?",
+            a: [ "Genetic susceptibility", "Virulence of the bacteria", "Crowded living conditions", "Age of the patient" ],
+            correct: 2,
+            explanation: "<strong>Crowded living conditions</strong> are an external factor affecting exposure, making them part of the Environment."
+        },
+        {
+            q: "9. For chronic diseases, the time from exposure to the onset of symptoms is usually referred to as the:",
+            a: [ "Incubation period", "Latency period", "Infectious period", "Generation time" ],
+            correct: 1,
+            explanation: "While 'Incubation Period' is used for infectious diseases, <strong>Latency Period</strong> is the preferred term for chronic diseases."
+        },
+        {
+            q: "10. Herd immunity occurs when:",
+            a: [ "100% of the population is vaccinated", "The vector population is eliminated", "A high proportion of the population is immune", "Animals transmit the disease to humans" ],
+            correct: 2,
+            explanation: "<strong>Herd Immunity</strong> is the resistance of a community because a high proportion of members are immune."
+        },
+        {
+            q: "11. A 'Portal of Exit' typically corresponds to:",
+            a: [ "The site where the pathogen enters the new host", "The site where the pathogen lives in the soil", "The part of the host body where the agent leaves", "The method of transmission" ],
+            correct: 2,
+            explanation: "The <strong>Portal of Exit</strong> is the path by which a pathogen leaves its host (e.g., respiratory tract, alimentary canal)."
+        },
+        {
+            q: "12. Which of the following is classified as DIRECT transmission?",
+            a: [ "Touching a doorknob", "Drinking contaminated water", "Skin-to-skin contact", "Bite from a tick" ],
+            correct: 2,
+            explanation: "<strong>Skin-to-skin contact</strong> is a form of Direct transmission. Doorknobs (fomites) and Water (vehicles) are Indirect."
+        },
+        {
+            q: "13. In the triad, a 'chemical contaminant' causing illness would be classified as the:",
+            a: [ "Host", "Environment", "Agent", "Vehicle" ],
+            correct: 2,
+            explanation: "The <strong>Agent</strong> is the cause of the disease. It can be biological (bacteria), chemical (poison), or physical (trauma)."
+        },
+        {
+            q: "14. Droplet spread is generally considered 'Direct Transmission' because:",
+            a: [ "It involves an intermediary vehicle", "It requires close proximity (usually within a few feet)", "The droplets stay in the air for hours", "It involves skin contact" ],
+            correct: 1,
+            explanation: "Droplet spread involves direct spray over a few feet before the droplets fall, requiring <strong>close proximity</strong>."
+        },
+        {
+            q: "15. 'Droplet nuclei' are associated with which type of transmission?",
+            a: [ "Direct Droplet Spread", "Airborne (Indirect)", "Vectorborne", "Waterborne" ],
+            correct: 1,
+            explanation: "<strong>Droplet nuclei</strong> are the dried residue of droplets that remain suspended in the air, characterizing <strong>Airborne</strong> transmission."
+        },
+        {
+            q: "16. Which of the following is a 'Vehicle'?",
+            a: [ "A flea", "A mosquito", "A surgical scalpel", "A dog" ],
+            correct: 2,
+            explanation: "A <strong>surgical scalpel</strong> is an inanimate object (fomite) that can carry infection, falling under Vehicles. Fleas/Mosquitoes are Vectors."
+        },
+        {
+            q: "17. A reservoir that is NOT a human or an animal is generally:",
+            a: [ "A Vector", "Environmental", "A Carrier", "A Fomite" ],
+            correct: 1,
+            explanation: "Reservoirs are Human, Animal, or <strong>Environmental</strong> (e.g., soil, water)."
+        },
+        {
+            q: "18. The 'Incubation Period' is the time interval between:",
+            a: [ "Onset of symptoms and recovery", "Exposure to an agent and onset of symptoms", "Exposure to an agent and death", "Diagnosis and treatment" ],
+            correct: 1,
+            explanation: "The <strong>Incubation Period</strong> is defined as the time from exposure to the onset of symptoms."
+        },
+        {
+            q: "19. If an agent is transmitted via bedding or handkerchiefs, these objects are specifically called:",
+            a: [ "Vectors", "Droplets", "Vehicles (Fomites)", "Reservoirs" ],
+            correct: 2,
+            explanation: "Inanimate objects like bedding that convey infection are called <strong>Fomites</strong>, which are a type of Vehicle."
+        },
+        {
+            q: "20. Which factor determines whether herd immunity is achieved?",
+            a: [ "Severity of disease", "Proportion of immune individuals", "Size of pathogen", "Incubation period" ],
+            correct: 1,
+            explanation: "Herd immunity relies on the <strong>proportion of immune individuals</strong> being high enough to stop transmission."
+        },
+        {
+            q: "21. Ticks transmitting Lyme disease is an example of:",
+            a: [ "Mechanical Vectorborne", "Biological Vectorborne", "Vehicleborne", "Direct contact" ],
+            correct: 1,
+            explanation: "Because the agent undergoes development/multiplication inside the tick, it is a <strong>Biological</strong> vector."
+        },
+        {
+            q: "22. Clostridium botulinum spores in the soil are an example of a(n):",
+            a: [ "Animal reservoir", "Environmental reservoir", "Human reservoir", "Portal of exit" ],
+            correct: 1,
+            explanation: "Soil is a classic example of an <strong>Environmental reservoir</strong>."
+        },
+        {
+            q: "23. When a fly lands on feces and then lands on your food, transmitting bacteria, the fly is acting as a:",
+            a: [ "Biological vector", "Mechanical vector", "Fomite", "Reservoir" ],
+            correct: 1,
+            explanation: "The fly simply carries the agent on its feet without the agent multiplying inside it. This is a <strong>Mechanical vector</strong>."
+        },
+        {
+            q: "24. Which of the following best describes the 'Host'?",
+            a: [ "The cause of the disease", "The organism that harbors the disease", "The external surroundings", "The vehicle of transmission" ],
+            correct: 1,
+            explanation: "The <strong>Host</strong> is the susceptible human or animal that harbors the disease."
+        },
+        {
+            q: "25. A nurse pricks their finger with a needle used on a patient. This is:",
+            a: [ "Direct contact", "Vectorborne", "Indirect Vehicleborne", "Airborne" ],
+            correct: 2,
+            explanation: "The needle is a vehicle (specifically a fomite). Therefore, this is <strong>Indirect Vehicleborne</strong> transmission."
+        },
+        {
+            q: "26. 'Zoonosis' refers to a disease that:",
+            a: [ "Originated in a zoo", "Is transmissible from animals to humans", "Is transmitted from humans to animals only", "Is transmitted via insects only" ],
+            correct: 1,
+            explanation: "<strong>Zoonosis</strong> is an infectious disease transmissible from animals to humans (e.g., Rabies)."
+        },
+        {
+            q: "27. Which of these is a Portal of Entry?",
+            a: [ "Feces", "Saliva", "Mucous membranes", "Urine" ],
+            correct: 2,
+            explanation: "Feces/Urine/Saliva are substances that exit. <strong>Mucous membranes</strong> (nose, mouth, eyes) are portals where the agent enters."
+        },
+        {
+            q: "28. An asymptomatic carrier is someone who:",
+            a: [ "Has recovered", "Never had the disease", "Has the infection but shows no symptoms", "Is immune" ],
+            correct: 2,
+            explanation: "Asymptomatic (or inapparent) carriers have the infection and can transmit it but <strong>show no symptoms</strong>."
+        },
+        {
+            q: "29. The 'Chain of Infection' includes all EXCEPT:",
+            a: [ "Reservoir", "Portal of Exit", "Mode of Transmission", "Diagnosis" ],
+            correct: 3,
+            explanation: "The Chain includes Agent, Reservoir, Portal of Exit, Mode of Transmission, Portal of Entry, and Host. <strong>Diagnosis</strong> is a medical action."
+        },
+        {
+            q: "30. In the triad, 'nutritional status' is a factor of the:",
+            a: [ "Agent", "Host", "Environment", "Vector" ],
+            correct: 1,
+            explanation: "Nutritional status is an intrinsic characteristic of the <strong>Host</strong> that affects susceptibility."
+        },
+        {
+            q: "31. Tuberculosis is typically transmitted via:",
+            a: [ "Direct skin contact", "Airborne transmission (droplet nuclei)", "Water", "Vectors" ],
+            correct: 1,
+            explanation: "TB is the classic example of <strong>Airborne transmission</strong> via droplet nuclei."
+        },
+        {
+            q: "32. Which of the following best describes an 'Agent'?",
+            a: [ "Soil", "Bacteria, virus, or parasite", "Animal carrier", "Wind" ],
+            correct: 1,
+            explanation: "The <strong>Agent</strong> is the microbe (bacteria, virus, parasite) or force that causes the disease."
+        },
+        {
+            q: "33. A 'Common Source' outbreak implies:",
+            a: [ "Person-to-person transmission", "Exposure of a group to a single noxious influence", "Vectorborne only", "Endemic disease" ],
+            correct: 1,
+            explanation: "Common Source means the group was exposed to a <strong>single common influence</strong> (like a contaminated water well)."
+        },
+        {
+            // REPLACED QUESTION
+            q: "34. Cholera is typically transmitted via contaminated water. This is an example of:",
+            a: [ "Vectorborne transmission", "Vehicleborne transmission", "Direct Contact", "Airborne transmission" ],
+            correct: 1,
+            explanation: "Water is a non-living vehicle that conveys the pathogen. This is <strong>Vehicleborne</strong> transmission."
+        },
+        {
+            q: "35. In epidemiology, 'Place' usually refers to:",
+            a: [ "Hospital name", "Geographic location of the problem", "Body part affected", "Where the doctor is located" ],
+            correct: 1,
+            explanation: "In descriptive epidemiology (Time, Place, Person), <strong>Place</strong> refers to the geographic location of the event."
+        },
+        {
+            q: "36. Which describes a 'Convalescent Carrier'?",
+            a: [ "Transmits before symptoms start", "Transmits after symptoms have subsided", "Transmits without ever having symptoms", "Transmits only when dead" ],
+            correct: 1,
+            explanation: "A <strong>Convalescent Carrier</strong> has recovered from symptoms but is still capable of transmitting the pathogen."
+        },
+        {
+            q: "37. Hookworm larvae in soil piercing the skin is an example of:",
+            a: [ "Direct contact", "Vehicleborne", "Vectorborne", "Airborne" ],
+            correct: 0,
+            explanation: "Contact with soil-dwelling agents that pierce the skin is often classified as <strong>Direct contact</strong>."
+        },
+        {
+            q: "38. Which is NOT a type of Reservoir?",
+            a: [ "Human", "Animal", "Insect", "Fomite" ],
+            correct: 3,
+            explanation: "Insects can be reservoirs (if the agent multiplies there), but <strong>Fomites</strong> (inanimate objects) are vehicles, not reservoirs."
+        },
+        {
+            q: "39. The threshold for herd immunity is higher if:",
+            a: [ "The disease is less contagious", "The disease is highly contagious", "The population is small", "The mortality rate is low" ],
+            correct: 1,
+            explanation: "Highly contagious diseases (like Measles) require a higher percentage of immune people to achieve herd immunity."
+        },
+        {
+            q: "40. Which is a 'Portal of Entry' for a bloodborne pathogen?",
+            a: [ "Intact skin", "Broken skin / Needle puncture", "Respiratory tract", "Digestive tract" ],
+            correct: 1,
+            explanation: "Bloodborne pathogens typically enter through <strong>broken skin</strong> or direct injection (puncture)."
+        },
+        {
+            q: "41. Anthrax spores can survive in soil for decades. Here, the soil is:",
+            a: [ "The Vector", "The Reservoir", "The Host", "The Agent" ],
+            correct: 1,
+            explanation: "The soil is the habitat where the agent lives, making it the <strong>Reservoir</strong>."
+        },
+        {
+            q: "42. Transplacental transmission (mother to fetus) is considered:",
+            a: [ "Vertical Transmission", "Horizontal Transmission", "Vectorborne", "Airborne" ],
+            correct: 0,
+            explanation: "Transmission from mother to child (in utero or during birth) is called <strong>Vertical Transmission</strong>."
+        },
+        {
+            q: "43. Which is an Agent factor?",
+            a: [ "Immunity", "Chemical stability", "Humidity", "Housing" ],
+            correct: 1,
+            explanation: "<strong>Chemical stability</strong> is a property of the Agent (ability to survive). Immunity is Host; Humidity/Housing are Environment."
+        },
+        {
+            q: "44. What is an 'Incubatory Carrier'?",
+            a: [ "Someone who transmits after recovery", "Someone who transmits before symptoms appear", "Someone who never gets sick", "A chronic carrier" ],
+            correct: 1,
+            explanation: "An <strong>Incubatory Carrier</strong> can transmit the agent during the incubation period, before clinical symptoms start."
+        },
+        {
+            q: "45. The 'Generation Time' is roughly equivalent to:",
+            a: [ "The incubation period", "The latency period", "The interval between infection of a host and their ability to infect others", "The duration of illness" ],
+            correct: 2,
+            explanation: "Generation time is the time between the infection of the host and the point of maximal communicability of that host."
+        },
+        {
+            q: "46. Which transmission mode involves 'Dust'?",
+            a: [ "Droplet", "Direct", "Airborne", "Vector" ],
+            correct: 2,
+            explanation: "Dust particles can carry infectious agents and remain suspended, which is <strong>Airborne</strong> transmission."
+        },
+        {
+            q: "47. A 'Propagated Epidemic' usually results from:",
+            a: [ "Common source exposure", "Person-to-person transmission", "A single meal", "A chemical spill" ],
+            correct: 1,
+            explanation: "Propagated epidemics spread from <strong>person-to-person</strong>, creating a series of peaks."
+        },
+        {
+            q: "48. Which is a Host factor?",
+            a: [ "Temperature", "Pollution", "Behavior/Lifestyle", "Toxin level" ],
+            correct: 2,
+            explanation: "<strong>Behavior and Lifestyle</strong> (e.g., diet, exercise, hygiene) are internal factors of the Host."
+        },
+        {
+            q: "49. Why is 'Typhoid Mary' famous in epidemiology?",
+            a: [ "She was a super-spreader vector", "She was a Chronic Asymptomatic Carrier", "She invented the vaccine", "She was the first case of Typhoid" ],
+            correct: 1,
+            explanation: "Mary Mallon was a <strong>Chronic Asymptomatic Carrier</strong> who transmitted Typhoid to many people while cooking for them."
+        },
+        {
+            q: "50. If R0 (Basic Reproductive Number) is less than 1:",
+            a: [ "The disease will spread rapidly", "The disease will eventually die out", "The disease is a pandemic", "The disease is endemic" ],
+            correct: 1,
+            explanation: "If R0 < 1, each case produces fewer than one new case, meaning the disease will <strong>die out</strong>."
+        }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    const container = document.getElementById('quiz-container');
+    const scoreBoard = document.getElementById('scoreboard');
+    const progressBar = document.getElementById('progress');
+    const nextBtn = document.getElementById('next-btn');
+
+    function renderQuestion(index) {
+        // Clear previous question
+        container.innerHTML = '';
+        nextBtn.style.display = 'none'; // Hide next button
+        
+        const item = quizData[index];
+        progressBar.textContent = `Question ${index + 1} / ${quizData.length}`;
+
+        // Create Card
+        const card = document.createElement('div');
+        card.className = 'question-card';
+
+        // Question Text
+        const qText = document.createElement('div');
+        qText.className = 'question-text';
+        qText.textContent = item.q;
+        card.appendChild(qText);
+
+        // Options Container
+        const ul = document.createElement('ul');
+        ul.className = 'options';
+
+        // Options List
+        item.a.forEach((optionText, optIndex) => {
+            const li = document.createElement('li');
+            li.className = 'option-item';
+            
+            li.onclick = () => handleSelection(li, optIndex, item.correct, item.explanation, card);
+
+            const radio = document.createElement('input');
+            radio.type = 'radio';
+            radio.name = `q${index}`;
+            radio.style.marginRight = '10px';
+            
+            const label = document.createElement('span');
+            label.textContent = optionText;
+
+            li.appendChild(radio);
+            li.appendChild(label);
+            ul.appendChild(li);
+        });
+        card.appendChild(ul);
+
+        // Explanation Div
+        const expDiv = document.createElement('div');
+        expDiv.className = 'explanation';
+        card.appendChild(expDiv);
+
+        container.appendChild(card);
+    }
+
+    function handleSelection(clickedLi, selectedOptIndex, correctOptIndex, explanationText, card) {
+        // Prevent re-answering
+        if (clickedLi.parentElement.classList.contains('answered')) return;
+
+        const allOptions = card.querySelectorAll('.option-item');
+        allOptions.forEach(opt => {
+            opt.classList.add('disabled');
+            opt.parentElement.classList.add('answered');
+        });
+
+        const expDiv = card.querySelector('.explanation');
+        let isCorrect = (selectedOptIndex === correctOptIndex);
+
+        if (isCorrect) {
+            score++;
+            clickedLi.classList.add('correct-selection');
+            expDiv.innerHTML = `<strong>Correct!</strong><br>${explanationText}`;
+            expDiv.classList.add('correct');
+        } else {
+            clickedLi.classList.add('incorrect-selection');
+            // Highlight correct answer
+            allOptions[correctOptIndex].classList.add('correct-selection');
+            
+            expDiv.innerHTML = `<strong>Incorrect.</strong><br>${explanationText}`;
+            expDiv.classList.add('incorrect');
+        }
+
+        // Show Explanation
+        expDiv.style.display = 'block';
+        scoreBoard.textContent = `Score: ${score}`;
+
+        // Show Next Button
+        nextBtn.style.display = 'block';
+        if (currentQuestionIndex === quizData.length - 1) {
+            nextBtn.textContent = "Finish Test";
+        }
+    }
+
+    function nextQuestion() {
+        if (currentQuestionIndex < quizData.length - 1) {
+            currentQuestionIndex++;
+            renderQuestion(currentQuestionIndex);
+        } else {
+            // Finish
+            container.innerHTML = '';
+            document.querySelector('.nav-container').style.display = 'none';
+            document.getElementById('finish-screen').style.display = 'block';
+            document.getElementById('final-score').textContent = `Final Score: ${score} / ${quizData.length}`;
+        }
+    }
+
+    // Start
+    renderQuestion(0);
+
+</script>
+
+</body>
+</html>
+
+```
